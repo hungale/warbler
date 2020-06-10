@@ -225,7 +225,7 @@ def profile():
 
     if form.validate_on_submit():
         if User.authenticate(g.user.username,
-                            form.password.data):
+                             form.password.data):
 
             g.user.username = form.username.data
             g.user.email = form.email.data
@@ -242,8 +242,6 @@ def profile():
             flash("Your password is wrong, please try again")
 
     return render_template('/users/edit.html', form=form)
-    
-
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -311,6 +309,46 @@ def messages_destroy(message_id):
     return redirect(f"/users/{g.user.id}")
 
 
+@app.route('/messages/<int:message_id>/like', methods=["POST"])
+def like_message(message_id):
+    """Like a message."""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # create a new like
+    # new_like = Likes(user_id=g.user.id, message_id=message_id)
+
+    # add it in to the user, if it is in, or remove if not?
+    liked_ids = [like.id for like in g.user.likes]
+    msg = Message.query.get(message_id)
+    if message_id in liked_ids:
+        # remove the id
+        g.user.likes.remove(msg)
+    else:
+        g.user.likes.append(msg)
+
+    db.session.commit()
+
+    # how to redirect back to route you came from?
+    return redirect(f"/users/{g.user.id}/liked")
+
+
+@app.route('/users/<int:user_id>/liked')
+def show_liked(user_id):
+    """Show liked messages."""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    liked_msgs = g.user.likes
+    liked_ids = [like.id for like in g.user.likes]
+    # breakpoint()
+    return render_template("/users/liked.html", 
+                           user=g.user, 
+                           messages=liked_msgs,
+                           likes=liked_ids)
+
+
 ##############################################################################
 # Homepage and error pages
 
@@ -322,18 +360,20 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
     if g.user:
-        following_messages = [message.id for message in g.user.following]
-        following_messages.append(g.user.id)
+        following_ids = [message.id for message in g.user.following]
+        following_ids.append(g.user.id)
         messages = (Message
                     .query
-                    .filter(Message.user_id.in_(following_messages))
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages)
+        # make an array of liked ids
+        liked_ids = [like.id for like in g.user.likes]
+
+        return render_template('home.html', messages=messages, likes=liked_ids)
 
     else:
         return render_template('home-anon.html')
