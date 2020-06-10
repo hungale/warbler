@@ -236,8 +236,8 @@ def profile():
             return redirect(f'/users/{g.user.id}')
 
         else: 
+            # make password error, tell user they failed
             flash("Your password is wrong, please try again")
-            return redirect('/')
 
     return render_template('/users/edit.html', form=form)
     
