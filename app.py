@@ -116,6 +116,7 @@ def logout():
 
     do_logout()
     flash("Successfully logged out.")
+
     return redirect('/')
 
 
@@ -153,6 +154,7 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
+
     return render_template('users/show.html', user=user, messages=messages)
 
 
@@ -325,11 +327,11 @@ def homepage():
         following_messages = [message.id for message in g.user.following]
         following_messages.append(g.user.id)
         messages = (Message
-                .query
-                .filter(Message.user_id.in_(following_messages))
-                .order_by(Message.timestamp.desc())
-                .limit(100)
-                .all())
+                    .query
+                    .filter(Message.user_id.in_(following_messages))
+                    .order_by(Message.timestamp.desc())
+                    .limit(100)
+                    .all())
 
         return render_template('home.html', messages=messages)
 
