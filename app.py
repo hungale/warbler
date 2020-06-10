@@ -237,7 +237,7 @@ def profile():
 
             return redirect(f'/users/{g.user.id}')
 
-        else: 
+        else:
             # make password error, tell user they failed
             flash("Your password is wrong, please try again")
 
@@ -316,12 +316,10 @@ def like_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    # create a new like
-    # new_like = Likes(user_id=g.user.id, message_id=message_id)
-
     # add it in to the user, if it is in, or remove if not?
     liked_ids = [like.id for like in g.user.likes]
     msg = Message.query.get(message_id)
+
     if message_id in liked_ids:
         # remove the id
         g.user.likes.remove(msg)
@@ -340,13 +338,12 @@ def show_liked(user_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
+
     liked_msgs = g.user.likes
-    liked_ids = [like.id for like in g.user.likes]
-    # breakpoint()
-    return render_template("/users/liked.html", 
-                           user=g.user, 
-                           messages=liked_msgs,
-                           likes=liked_ids)
+
+    return render_template("/users/liked.html",
+                           user=g.user,
+                           messages=liked_msgs)
 
 
 ##############################################################################

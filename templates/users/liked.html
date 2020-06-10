@@ -8,12 +8,12 @@
         <li class="list-group-item">
           <a href="/messages/{{ message.id }}" class="message-link"/>
 
-          <a href="/users/{{ user.id }}">
+          <a href="/users/{{ message.user.id }}">
             <img src="{{ message.user.image_url }}" alt="user image" class="timeline-image">
           </a>
 
           <div class="message-area">
-            <a href="/users/{{ user.id }}">@{{ message.user.username }}</a>
+            <a href="/users/{{ message.user.id }}">@{{ message.user.username }}</a>
             <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
             <p>{{ message.text }}</p>
           </div>
@@ -22,7 +22,7 @@
             <button class="
               btn
               btn-sm
-              {{'btn-primary' if message.id in likes else 'btn-secondary'}}"
+              btn-primary"
             >
               <i class="fa fa-thumbs-up"></i>
             </button>
