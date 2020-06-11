@@ -1,8 +1,5 @@
 {% extends 'users/detail.html' %}
 {% block user_details %}
-<script src='/static/likes.js'></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <div class="col-sm-6">
     <ul class="list-group" id="messages">
 
@@ -21,7 +18,7 @@
             <p>{{ message.text }}</p>
           </div>
           {% if g.user.id != message.user_id %}
-          
+          <div class="messages-like">
             <button data-id="{{message.id}}" class="
               btn
               btn-sm
@@ -29,7 +26,7 @@
             >
               <i class="fa fa-thumbs-up"></i>
             </button>
-          
+          </div>
           {% endif %}
         </li>
 
