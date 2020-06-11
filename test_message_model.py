@@ -29,7 +29,7 @@ from app import app
 db.create_all()
 
 
-class UserModelTestCase(TestCase):
+class MessageModelTestCase(TestCase):
     """Test views for messages."""
 
     def setUp(self):
@@ -39,7 +39,7 @@ class UserModelTestCase(TestCase):
         Message.query.delete()
         Follows.query.delete()
 
-        self.client = app.test_client()
+        self.client = app.test_client()    
 
     def test_message_model(self):
         """Does basic model work?"""
@@ -70,3 +70,6 @@ class UserModelTestCase(TestCase):
         self.assertIsInstance(m.user, User)
         self.assertEqual(m.user_id, u.id)
         self.assertEqual(m.text, "test")
+        self.assertIsInstance(m, Message)
+
+    # look at test solutions later

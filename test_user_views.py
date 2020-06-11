@@ -17,7 +17,8 @@
 # /messages/<user_id>/liked GET
 
 # create a list of routes and loop overthem to check status code
-# routes = ['/', '/signup', '/login']
+
+
 
 """User model tests."""
 
@@ -62,18 +63,23 @@ class RouteTests(TestCase):
         self.client = app.test_client()
         app.config['TESTING'] = True
 
-        user = User.signup(
+        self.user = User.signup(
             username="abcman",
             password="abcman",
             email="abcman@email.com",
             image_url=None
         )
 
+        testuser = User.signup(username="testuser",
+                                    email="test@test.com",
+                                    password="testuser",
+                                    image_url=None)
+
         db.session.commit()
         # self.user = user # don't do this, it won't remember
-        self.user = User.query.get(user.id)
+        # self.user = User.query.get(user.id)
+        self.testuser = User.query.get(testuser.id)
         self.password = "abcman"
-        # breakpoint()
 
         # SESSION IS self.client.session_transaction()
 
@@ -93,20 +99,91 @@ class RouteTests(TestCase):
         html = response.get_data(as_text=True)
         self.assertIn("Access unauthorized.", html)
         
-    def test_users(self):
+    def test_user_page(self):
         """Make sure information is in the session and HTML is displayed"""
 
         response = self.client.get('/users')
         self.assertEqual(response.status_code, 200)
+
+    # def test_login(self):
+    #     """Make sure information is in the session and HTML is displayed"""
+
+        
+    #     with self.client as c:
+    #         with c.session_transaction() as sess:
+    #             sess[CURR_USER_KEY] = self.user.id
+    #         data = {
+    #             "username": f"{self.user.username}",
+    #             "password": f"{self.password}"
+    #         }
+    #         response = self.client.post('/login', 
+    #                                     data=data,)
+    #                                     # follow_redirects=True)
+    #         html = response.get_data(as_text=True)
+    #         self.assertEqual(response.status_code, 200)
+    #         self.assertIn("Hello, abcman!", html)
     
-    def test_homepage_if_logged_in(self):
-        data = {
-            "username": f"{self.user.username}",
-            "password": f"{self.password}"
-        }
-        response = self.client.post('/login', 
-                                    data=data,
-                                    follow_redirects=True)
-        html = response.get_data(as_text=True)
-        breakpoint()
-        self.assertIn("Hello, abcman!", html)
+    def test_basic_pages_if_logged_in(self):
+        basic_routes = [
+            ('/', '@abcman'),
+            ('/signup', 'Join Warbler today.'),
+            ('/login', 'Welcome back.'),
+            ('/users', '@testuser'),
+            ('/users/profile', 'Edit Your Profile'),
+            ('/logout', 'Successfully logged out.'),
+        ]
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.user.id
+
+            for route, assertion in basic_routes:
+                response = self.client.get(route, follow_redirects=True)
+                self.assertEqual(response.status_code, 200)
+                html = response.get_data(as_text=True)
+                self.assertIn(assertion, html)
+    
+    def test_follower_following_if_logged_in(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.user.id
+            
+            other_user_id = self.testuser.id
+            response = self.client.get(f'/users/{other_user_id}/followers')
+            html = response.get_data(as_text=True)
+            self.assertIn("@testuser", html)
+
+            response = self.client.get(f'/users/{other_user_id}/following')
+            html = response.get_data(as_text=True)
+            self.assertIn("@testuser", html)
+
+            # logout and try again
+            with c.session_transaction() as sess:
+                sess.pop(CURR_USER_KEY)
+            
+            other_user_id = self.testuser.id
+            response = self.client.get(f'/users/{other_user_id}/followers',
+                                       follow_redirects=True)
+            html = response.get_data(as_text=True)
+            self.assertIn("Access unauthorized.", html)
+
+            response = self.client.get(f'/users/{other_user_id}/following',
+                                       follow_redirects=True)
+            html = response.get_data(as_text=True)
+            self.assertIn("Access unauthorized.", html)
+    
+    # def test_follower_following(self):
+    #     with self.client as c:
+    #         with c.session_transaction() as sess:
+    #             sess[CURR_USER_KEY] = self.user.id
+    #         other_user_id = self.testuser.id
+    #         breakpoint()
+    #         response = self.client.post(f'/users/follow/{other_user_id}',
+    #                                    follow_redirects=True)
+    #         html = response.get_data(as_text=True)
+    #         self.assertIn("@testuser", html)
+    #         self.assertIn("following>1</a>", html)
+    #         response = self.client.post(f'/users/stop-following/{other_user_id}',
+    #                                    follow_redirects=True)
+    #         html = response.get_data(as_text=True)
+    #         self.assertNotIn("@testuser", html)
+    #         self.assertIn("following>0</a>", html)

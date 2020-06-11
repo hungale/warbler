@@ -120,22 +120,25 @@ class UserTestCase(TestCase):
 
         db.session.commit()
         self.assertEqual(type(user3), User)
+
+        # test failing signup
         self.assertRaises(ValueError, User.signup, username=2,
-                            email=None,
-                            password=None,
-                            image_url=None) 
+                          email=None,
+                          password=None,
+                          image_url=None) 
 
     def test_authentication(self):
         """test authentication works as intended"""
 
         user4 = User.signup(username='user4', 
-                    password='words',
-                    email='emailaddress@email.com',
-                    image_url='someimageurl')
+                            password='words',
+                            email='emailaddress@email.com',
+                            image_url='someimageurl')
 
         db.session.add(user4)
         db.session.commit()
 
+        # 8
         auth = User.authenticate(user4.username, 'words')
         self.assertEqual(auth, user4)
 

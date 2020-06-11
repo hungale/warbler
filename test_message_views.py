@@ -49,12 +49,12 @@ class MessageViewTestCase(TestCase):
                                     password="testuser",
                                     image_url=None)
 
-        self.testuser2 = User.signup(username="testuser2",
-                                    email="test2@test.com",
-                                    password="testuser",
-                                    image_url=None)
-
+        testuser2 = User.signup(username="testuser2",
+                                email="test2@test.com",
+                                password="testuser",
+                                image_url=None)
         db.session.commit()
+        self.testuser2_id = testuser2.id
 
     def test_add_message(self):
         """Can use add a message?"""
@@ -85,10 +85,11 @@ class MessageViewTestCase(TestCase):
                 sess[CURR_USER_KEY] = self.testuser.id
 
             resp = c.post("/messages/new", data={"text": "Hello"})
+            self.assertEqual(resp.status_code, 302)
             msg = Message.query.one()
             db.session.delete(msg)
 
-            self.assertEqual(len(Message.query.all()),0)
+            self.assertEqual(len(Message.query.all()), 0)
 
     def test_logged_out_post(self):
         """Are logged-out users incapable of posting?"""
@@ -97,7 +98,7 @@ class MessageViewTestCase(TestCase):
 
             resp = c.post("/messages/new", data={"text": "Hello"})
             self.assertEqual(resp.status_code, 302)
-            self.assertEqual(len(Message.query.all()),0)
+            self.assertEqual(len(Message.query.all()), 0)
 
     def test_logged_out_delete(self):
         """Are logged-out users incapable of deleting posts?"""
@@ -115,17 +116,30 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             resp = c.post(f'/messages/{msg.id}/delete')
-            self.assertEqual(len(Message.query.all()),1)
+            self.assertEqual(len(Message.query.all()), 1)
             self.assertEqual(resp.status_code, 302)
 
     def test_user_validity(self):
+        """Test if you cannot delete another user's messages."""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+                
+            resp = c.post("/messages/new", data={"text": "Hello"})
 
+            self.assertEqual(len(Message.query.all()), 1)
 
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser2_id
 
+            msg = Message.query.one()
+            resp = c.post(f'/messages/{msg.id}/delete')
+            # check that it's not deleted
+            self.assertEqual(len(Message.query.all()), 1)
+            self.assertEqual(resp.status_code, 302)
+            # resp = c.get('/')
+            # html = resp.get_data(as_text=True)
+            # self.assertIn("You cannot delete another user's posts.", html)
 
-
-
-            
-            
-
-        
+            # at the current point, adding posts as another user isn't possible
+            # since the route doesn't accept the message id
