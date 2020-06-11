@@ -7,7 +7,7 @@
 
 import os
 from unittest import TestCase
-from models import db, User, Message, Follows, bcrypt
+from models import db, User, Message, Follows
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -29,7 +29,7 @@ db.create_all()
 
 
 class UserModelTestCase(TestCase):
-    """Test views for messages."""
+    """Test views for Users."""
 
     def setUp(self):
         """Create test client, add sample data."""
@@ -135,49 +135,15 @@ class UserTestCase(TestCase):
 
         db.session.add(user4)
         db.session.commit()
-        
+
         auth = User.authenticate(user4.username, 'words')
         self.assertEqual(auth, user4)
 
-        auth = User.authenticate(self.user2.username, 'random')
+        # will fail w/ invalid salt
+        # auth = User.authenticate(self.user2.username, 'random')
+
+        auth = User.authenticate(user4.username, 'random')
         self.assertEqual(auth, False)
 
         auth = User.authenticate('jim', self.user1.password)
         self.assertEqual(auth, False)
-
-        # user = cls.query.filter_by(username=username).first()
-
-        # if user:
-        #     is_auth = bcrypt.check_password_hash(user.password, password)
-        #     if is_auth:
-        #         return user
-
-        # return False
-    
-
-    
-
-
-        
-
-        
-      
-# class RouteTests(TestCase)
-#     def setUp(self):
-#         """Stuff to do before every test."""
-
-#         self.client = app.test_client()
-#         app.config['TESTING'] = True
-
-#     def test_homepage(self):
-#     """Make sure information is in the session and HTML is displayed"""
-
-#         response = self.client.get('/')
-#         html = response.get_data(as_text=True)
-#         self.assertEqual(response.status_code, 200)
-     
-#     def test_users(self)
-#     """Make sure information is in the session and HTML is displayed"""
-
-#         response = self.client.get('/users')
-#         self.assertEqual(response.status_code, 200)
