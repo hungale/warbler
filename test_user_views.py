@@ -16,6 +16,9 @@
 # /messages/<message_id>/like POST
 # /messages/<user_id>/liked GET
 
+# create a list of routes and loop overthem to check status code
+# routes = ['/', '/signup', '/login']
+
 """User model tests."""
 
 # run these tests like:
@@ -37,7 +40,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
 # Now we can import app
 
-from app import app
+from app import app, CURR_USER_KEY
 from flask import Flask, render_template, request, flash, redirect, session, g
 
 # Create our tables (we do this here, so we only create the tables
@@ -71,6 +74,8 @@ class RouteTests(TestCase):
         self.user = User.query.get(user.id)
         self.password = "abcman"
         # breakpoint()
+
+        # SESSION IS self.client.session_transaction()
 
     def test_homepage(self):
         """Make sure information is in the session and HTML is displayed"""
