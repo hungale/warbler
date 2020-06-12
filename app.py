@@ -51,6 +51,12 @@ def do_logout():
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
+'''
+TODO: Write some decorator for this
+if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+'''
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
