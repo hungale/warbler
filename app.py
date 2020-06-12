@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import (Flask, render_template, request,
+                   flash, redirect, session, g, url_for)
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -52,8 +53,9 @@ def do_logout():
         del session[CURR_USER_KEY]
 
 '''
-TODO: Write some decorator for this
-if not g.user:
+user_auth_required():
+decorator for this:
+    if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 '''
